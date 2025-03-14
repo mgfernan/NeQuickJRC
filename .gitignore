@@ -1,0 +1,5 @@
+build/CMakeFiles
+build/cmake_install.cmake
+build/Makefile
+build/CMakeCache.txt
+build/libnequick.a

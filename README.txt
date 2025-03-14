@@ -14,9 +14,9 @@
  * Galileo is the European global navigation satellite system providing a highly accurate and global positioning service
  * under civilian control. Galileo, and in general current GNSS, are based on the broadcasting of electromagnetic ranging
  * signals in the L frequency band. Those satellite signals suffer from a number of impairments when propagating
- * through the Earth’s ionosphere. Receivers  operating  in  single  frequency  mode  may  use  the  single  frequency 
+ * through the Earth’s ionosphere. Receivers  operating  in  single  frequency  mode  may  use  the  single  frequency
  * ionospheric  correction  algorithm  NeQuickG to  estimate  the ionospheric delay on each satellite link.<br>
- * 
+ *
  * The implementation has been written in the C programming language standard 2011 and is divided in:
  *  - The NeQuickG JRC library (src/lib) and
  *  - The test driver program (src)
@@ -71,6 +71,14 @@
  *  there are targets available for debug, Unit test, x64, x86 and MODIP/CCIRs as preloaded constants<br>
  *  select Release target in the configuration management to get the release version<br>
  *  to test the target open a command line at msvc and run "make check".
+ *
+ * <h4>CMAKE library compilation option</h4>
+ *  To compile the library using CMAKE,
+ *  - cd build
+ *  - cmake ..
+ *  - make
+ *
+ *  This will create a library file libnequick.a
  *
  * <h3>Usage of the test driver program</h3>
  *  - open terminal at bin/(selected_compiler)
