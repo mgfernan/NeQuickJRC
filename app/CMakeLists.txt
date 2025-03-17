@@ -1,7 +1,7 @@
 set(TARGET NeQuickJRC)
 
 # Include directories
-include_directories(${CMAKE_SOURCE_DIR}/src/lib/public/ ${CMAKE_SOURCE_DIR}/src/lib/private/)
+include_directories(${CMAKE_SOURCE_DIR}/lib)
 
 # Executable
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
