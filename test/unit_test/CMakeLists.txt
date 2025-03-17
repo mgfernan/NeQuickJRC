@@ -20,10 +20,7 @@ get_filename_component(BASENAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 set(EXECUTABLE test_${BASENAME}${SUFFIX}.e )
 set(TEST_NAME ${BASENAME} )
 
-
-message(STATUS ${CMAKE_SOURCE_DIR}/lib)
-
-include_directories(${CMAKE_SOURCE_DIR}/lib/include ${CMAKE_SOURCE_DIR}/lib)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/include ${CMAKE_CURRENT_SOURCE_DIR}/../../lib)
 add_executable (${EXECUTABLE} ${TEST_SOURCE_FILES})
 
 target_link_libraries(${EXECUTABLE} ${NEQUICK_LIB_NAME} m)
