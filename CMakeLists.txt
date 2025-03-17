@@ -62,23 +62,7 @@ set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/NeQuickG_JRC.c
 )
 
-# Include directories
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/lib/public/ ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/private/)
-
-# Executable
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
-
-add_executable(NeQuickJRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/NeQuickG_JRC_exception.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/NeQuickG_JRC_exception.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/NeQuickG_JRC_input_data_std_stream.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/NeQuickG_JRC_input_data_std_stream.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/NeQuickG_JRC_input_data_stream.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/NeQuickG_JRC_input_data_stream.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/NeQuickG_JRC_main.c
-)
-
-target_link_libraries(NeQuickJRC ${NEQUICK_LIB_NAME} m)
+add_subdirectory(app)
 
 # Installation (optional)
 #install(TARGETS NeQuickJRC DESTINATION bin)
@@ -91,6 +75,8 @@ target_link_libraries(NeQuickJRC ${NEQUICK_LIB_NAME} m)
 # add_test(NAME NeQuickJRCTests COMMAND NeQuickJRCTests)
 
 # For usage as a library
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/lib/public/ ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/private/)
+
 add_library(${NEQUICK_LIB_NAME} ${SOURCES})
 target_include_directories(${NEQUICK_LIB_NAME} PUBLIC include)
 install(TARGETS ${NEQUICK_LIB_NAME} DESTINATION lib)
