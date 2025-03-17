@@ -27,6 +27,13 @@ int main(int argc, char* argv[]){
   const char* const pModip_file = argv[1];
   const char* const pCCIR_folder = argv[2];
 
+  (void)pModip_file;
+  (void)pCCIR_folder;
+
+  if (argc != 3) {
+    return 1;
+  }
+
   bool ret = true;
 
   if (!NeQuickG_API_test(pModip_file, pCCIR_folder)) {
