@@ -10,7 +10,7 @@ set(CMAKE_LINKER_COVERAGE_FLAGS  "--coverage -lgcov")
 
 set(CMAKE_C_STANDARD 11) # Or a more recent standard
 set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra") # Add compiler warnings
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wmissing-prototypes -Wfloat-equal -Wshadow -Wpedantic -Wconversion -Wcast-qual")
 set(CMAKE_C_FLAGS_DEBUG "-g -O0  ${CMAKE_COMPILER_WARNING_FLAGS} ${CMAKE_COMPILER_COVERAGE_FLAGS}")
 SET(CMAKE_C_FLAGS_PROFILER "${CMAKE_COMPILER_COVERAGE_FLAGS} ${CMAKE_C_FLAGS_DEBUG} -pg" CACHE STRING
     "Flags used by the C compiler to generate gmon.out profiler files."
@@ -32,8 +32,12 @@ add_subdirectory(app)
 #install(TARGETS NeQuickJRC DESTINATION bin)
 #install(DIRECTORY include/ DESTINATION include)
 
-# Optional: Add tests (if you have them)
-# enable_testing()
+# Test
+include(CTest)
+enable_testing()
+
+add_subdirectory("test/unit_test")
+
 # add_executable(NeQuickJRCTests test/NeQuickJRCTests.cpp src/NeQuickJRC.cpp) # Adjust paths
 # target_link_libraries(NeQuickJRCTests NeQuickJRC)
 # add_test(NAME NeQuickJRCTests COMMAND NeQuickJRCTests)

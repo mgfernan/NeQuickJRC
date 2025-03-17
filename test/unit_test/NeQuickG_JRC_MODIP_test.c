@@ -15,6 +15,8 @@
 #include "NeQuickG_JRC_macros.h"
 #include "NeQuickG_JRC_MODIP.h"
 
+#include "macros.h"
+
 #define NEQUICK_G_JRC_MODIP_TEST_VECTORS_COUNT (8)
 #define NEQUICK_G_JRC_MODIP_EPSILON (1e-5)
 

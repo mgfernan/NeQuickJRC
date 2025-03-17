@@ -17,6 +17,10 @@
 #include "NeQuickG_JRC_iono_F2_layer_fourier_coefficients.h"
 #include "NeQuickG_JRC_macros.h"
 
+#include "definitions.h"
+#include "macros.h"
+
+
 #define ITU_F2_LAYER_INTERPOLATED_COEFF_TEST_VECTORS_COUNT (1)
 #define ITU_F2_LAYER_INTERPOLATED_COEFF_FOURIER_TEST_VECTORS_COUNT (2)
 #define ITU_F2_LAYER_INTERPOLATED_COEFF_EPSILON (1e-5)

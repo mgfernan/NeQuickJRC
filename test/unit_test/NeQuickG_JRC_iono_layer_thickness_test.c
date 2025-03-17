@@ -18,6 +18,8 @@
 #include "NeQuickG_JRC_iono_F2_layer.h"
 #include "NeQuickG_JRC_macros.h"
 
+#include "macros.h"
+
 #define NEQUICKG_IONO_LAYER_THICKNESS_TEST_VECTORS_COUNT (1)
 #define NEQUICKG_IONO_LAYER_THICKNESS_TEST_VECTORS_THESHOLD (1e-5)
 

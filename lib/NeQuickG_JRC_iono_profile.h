@@ -110,12 +110,10 @@ extern int32_t iono_profile_get(
   const solar_activity_t* const pSolar_activity,
   const position_t * const pCurrent_position);
 
-#ifdef FTR_UNIT_TEST
 /** Unit test for ionospheric profile
  * @param[in, out] pContext ionospheric profile context
  */
 extern void iono_profile_get_peak_amplitudes(
   iono_profile_t* const pContext);
-#endif
 
 #endif // NEQUICK_G_JRC_IONO_PROFILE_H

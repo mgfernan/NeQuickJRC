@@ -15,6 +15,9 @@
 #include "NeQuickG_JRC_MODIP.h"
 #include "NeQuickG_JRC_solar_activity.h"
 
+#include "macros.h"
+
+
 #define NEQUICK_G_JRC_AZ_TEST_VECTORS_COUNT (8*3)
 #define NEQUICK_G_JRC_AZ_EPSILON (1e-6)
 #define NEQUICK_G_JRC_AZ_COEFFS_HIGH_ACTIVITY {236.831641, -0.39362878, 0.00402826613}

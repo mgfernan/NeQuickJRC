@@ -132,9 +132,6 @@ static double_t iono_profile_get_peak_amp_substracting_layer(
     other_layer_contribution);
 }
 
-#ifndef FTR_UNIT_TEST
-static
-#endif
 void iono_profile_get_peak_amplitudes(
   iono_profile_t * const pProfile) {
 

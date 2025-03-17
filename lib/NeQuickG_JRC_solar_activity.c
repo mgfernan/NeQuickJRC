@@ -30,6 +30,7 @@
  */
 #define NEQUICK_G_AZ_DEFAULT_VALUE_SFU (ITU_R_P_371_8_LOWER_SOLAR_FLUX_IN_SFU)
 
+
 /**
  * 3.1. Zero-valued coefficients and default Effective Ionisation Level
  *   When all the Effective Ionisation Level ionospheric broadcast
@@ -84,29 +85,6 @@ static double_t Az_calc(
   return Az;
 }
 
-#ifndef FTR_UNIT_TEST
-static
-#endif
-double_t
-solar_activity_get_effective_ionisation_level_in_sfu(
-  const AZ_coefficients_t* const pCoeff,
-  double_t modip) {
-  if (!are_valid(pCoeff)) {
-    /**
-     *   In those cases, a default value shall be used for correction in
-     *   the receiver:
-     *   ai0 = NEQUICK_G_AZ_DEFAULT_VALUE; ai1 = ai2 = 0
-     */
-    return NEQUICK_G_AZ_DEFAULT_VALUE_SFU;
-  }
-
-  {
-    double_t Az = Az_calc(pCoeff, modip);
-    check_boundaries(&Az);
-    return Az;
-  }
-}
-
 bool solar_activity_is_effective_ionisation_level_equal(
   double_t op1,
   double_t op2) {
@@ -146,6 +124,28 @@ void solar_activity_get(
     NeQuickG_Az_solar_activity_get_sun_spot_effective_count(
       pContext->effective_ionisation_level_sfu);
 }
+
+
+double_t
+  solar_activity_get_effective_ionisation_level_in_sfu(
+    const AZ_coefficients_t* const pCoeff,
+    double_t modip) {
+    if (!are_valid(pCoeff)) {
+      /**
+       *   In those cases, a default value shall be used for correction in
+       *   the receiver:
+       *   ai0 = NEQUICK_G_AZ_DEFAULT_VALUE; ai1 = ai2 = 0
+       */
+      return NEQUICK_G_AZ_DEFAULT_VALUE_SFU;
+    }
+
+    {
+      double_t Az = Az_calc(pCoeff, modip);
+      check_boundaries(&Az);
+      return Az;
+    }
+  }
+
 
 #undef NEQUICK_G_AZ_EQUALITY_EPSILON
 #undef NEQUICK_G_AZ_DEFAULT_VALUE_SFU

@@ -15,6 +15,8 @@
 #include "NeQuickG_JRC_macros.h"
 #include "NeQuickG_JRC_solar.h"
 
+#include "macros.h"
+
 #define NEQUICK_G_JRC_SOLAR_TEST_VECTORS_COUNT (5)
 #define NEQUICK_G_JRC_SOLAR_EFFETIVE_ZENITH_ANGLE_EPSILON (1e-5)
 

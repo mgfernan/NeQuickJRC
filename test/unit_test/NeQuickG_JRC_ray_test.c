@@ -16,6 +16,8 @@
 #include "NeQuickG_JRC_macros.h"
 #include "NeQuickG_JRC_ray.h"
 
+#include "macros.h"
+
 #define NEQUICK_G_JRC_RAY_TEST_VECTORS_COUNT (1)
 #define NEQUICK_G_JRC_RAY_TEST_RESULT_EPSILON (1e-5)
 

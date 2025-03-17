@@ -17,6 +17,7 @@
 #include "NeQuickG_JRC_MODIP.h"
 #include "NeQuickG_JRC_solar.h"
 #include "NeQuickG_JRC_solar_activity.h"
+#include "macros.h"
 
 #define NEQUICK_G_JRC_IONO_E_LAYER_TEST_VECTORS_COUNT (3)
 #define NEQUICK_G_JRC_IONO_E_LAYER_CRIT_FREQ_EPSILON (1e-5)

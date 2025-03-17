@@ -278,22 +278,6 @@ static void input_data_to_output_impl(
   input_data_to_output(&input_data, pFile, pFormat);
 }
 
-#ifdef FTR_UNIT_TEST
-#ifdef FTR_MODIP_CCIR_AS_CONSTANTS
-#define unit_test_impl(pModip_file, pCCIR_folder) \
-  unit_test_impl()
-#endif // FTR_MODIP_CCIR_AS_CONSTANTS
-
-/** {@ref NeQuickG_library.unit_test} */
-static bool unit_test_impl(
-  const char* const pModip_file,
-  const char* const pCCIR_folder) {
-  //lint -e{746} not made in the presence of a prototype
-  //due to FTR_MODIP_CCIR_AS_CONSTANTS trick
-  return NeQuickG_unit_test(pModip_file, pCCIR_folder);
-}
-#endif // FTR_UNIT_TEST
-
 const struct NeQuickG_library NeQuickG = {
   //lint -e{123} macro with arguments is intended
   .init = init,

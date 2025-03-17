@@ -9,10 +9,13 @@
  *  Questions? Submit your query at https://www.gsc-europa.eu/contact-us/helpdesk
  * @file
  */
+#include <stdlib.h>
 #include "NeQuickG_JRC_iono_F1_layer_test.h"
 
 #include "NeQuickG_JRC_iono_F1_layer.h"
 #include "NeQuickG_JRC_macros.h"
+
+#include "macros.h"
 
 #define NEQUICK_G_JRC_IONO_F1_LAYER_TEST_VECTORS_COUNT (3)
 #define NEQUICK_G_JRC_IONO_F1_LAYER_CRIT_FREQ_EPSILON (1e-5)

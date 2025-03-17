@@ -9,7 +9,6 @@
  *  Questions? Submit your query at https://www.gsc-europa.eu/contact-us/helpdesk
  * @file
  */
-#include "NeQuickG_JRC_UT.h"
 
 #include "NeQuickG_JRC_API_test.h"
 #include "NeQuickG_JRC_Az_test.h"
@@ -23,13 +22,10 @@
 #include "NeQuickG_JRC_ray_test.h"
 #include "NeQuickG_JRC_solar_test.h"
 
-#if defined(FTR_MODIP_CCIR_AS_CONSTANTS) && (defined(__GNUC__) || defined(__GNUG__))
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wmissing-prototypes"
-#endif
-bool NeQuickG_unit_test(
-  const char* const pModip_file,
-  const char* const pCCIR_folder) {
+int main(int argc, char* argv[]){
+
+  const char* const pModip_file = argv[1];
+  const char* const pCCIR_folder = argv[2];
 
   bool ret = true;
 

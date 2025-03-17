@@ -1,5 +1,5 @@
 /** Coefficients for the foF2 and M(3000)F2 models recommended by the
- *  Comité Consultatif International des Radiocommunications (CCIR).
+ *  Comitï¿½ Consultatif International des Radiocommunications (CCIR).
  *
  * @author Angela Aragon-Angel (maria-angeles.aragon@ec.europa.eu)
  * @ingroup NeQuickG_JRC
@@ -358,9 +358,6 @@ static int32_t interpolate_Fm3(
   return ret;
 }
 
-#ifndef FTR_UNIT_TEST
-static
-#endif
 int32_t F2_layer_fourier_coefficients_interpolate(
   F2_layer_fourier_coeff_context_t* const pContext,
   const NeQuickG_time_t * const pTime,

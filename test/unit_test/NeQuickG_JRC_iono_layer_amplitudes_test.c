@@ -19,6 +19,8 @@
 #include "NeQuickG_JRC_iono_profile.h"
 #include "NeQuickG_JRC_macros.h"
 
+#include "macros.h"
+
 #define NEQUICKG_IONO_LAYER_AMPLITUDES_TEST_VECTORS_COUNT (2)
 #define NEQUICKG_IONO_LAYER_AMPLITUDES_TEST_VECTORS_THESHOLD (1e-5)
 

@@ -21,9 +21,6 @@
 #include "NeQuickG_JRC_macros.h"
 
 #define NEQUICK_TEC_EXCEPTION -8
-#ifdef FTR_UNIT_TEST
-#define NEQUICK_UNIT_TEST_EXCEPTION -10
-#endif
 #define NEQUICK_G_JRC_TEC_EPSILON (5e-6)
 
 static void to_std_output
