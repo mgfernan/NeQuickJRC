@@ -20,3 +20,11 @@ target_link_libraries(${TARGET} ${NEQUICK_LIB_NAME} m)
 
 set(EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/${TARGET})
 install(PROGRAMS ${EXECUTABLE} DESTINATION bin)
+
+
+# Tests
+set(TESTNAME bin_command_line_ok)
+add_test(NAME ${TESTNAME} COMMAND  ${EXECUTABLE} -c 236.831641 -0.39362878 0.00402826613 1 0 297.66 82.49 78.11 8.23 54.29 20281546.18)
+set_tests_properties (${TESTNAME}
+                      PROPERTIES PASS_REGULAR_EXPRESSION
+                         "TEC =     22.33570")

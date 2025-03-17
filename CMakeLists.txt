@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.10) # Or a more recent version if needed
 
 project(NeQuickJRC VERSION 1.0.0 LANGUAGES C)
 
+include(CTest)
+enable_testing()
+
 
 set(CMAKE_COMPILER_WARNING_FLAGS "-Wall -Wno-comment -Werror=implicit-function-declaration -Wunused-function -Wunused-variable -Wunreachable-code")
 set(CMAKE_COMPILER_COVERAGE_FLAGS "--coverage -fprofile-arcs -ftest-coverage")
@@ -33,9 +36,6 @@ add_subdirectory(app)
 #install(DIRECTORY include/ DESTINATION include)
 
 # Test
-include(CTest)
-enable_testing()
-
 add_subdirectory("test/unit_test")
 
 # add_executable(NeQuickJRCTests test/NeQuickJRCTests.cpp src/NeQuickJRC.cpp) # Adjust paths
