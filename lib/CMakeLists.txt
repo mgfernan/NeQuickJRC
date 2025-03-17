@@ -46,4 +46,4 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/incl
 add_library(${NEQUICK_LIB_NAME} ${SOURCES})
 target_include_directories(${NEQUICK_LIB_NAME} PUBLIC include)
 install(TARGETS ${NEQUICK_LIB_NAME} DESTINATION lib)
-install(DIRECTORY include/ DESTINATION include)
+install(FILES include/NeQuickG_JRC.h DESTINATION include)

@@ -200,4 +200,16 @@ extern int32_t F2_layer_fourier_coefficients_get(
   const NeQuickG_time_t * const pTime,
   const solar_activity_t* const pSolar_activity);
 
+/** Unit test for CF2 and Cm3
+ * @param[in, out] pContext F2 Fourier coefficients context
+ * @param[in] pTime time context
+ * @param[in] Azr Effective sun spot number
+ */
+extern int32_t F2_layer_fourier_coefficients_interpolate(
+  F2_layer_fourier_coeff_context_t* const pContext,
+  const NeQuickG_time_t * const pTime,
+  const double_t Azr);
+
+
+
 #endif // NEQUICK_G_JRC_IONO_F2_LAYER_COEFFICIENTS_H
