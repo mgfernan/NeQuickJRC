@@ -28,3 +28,9 @@ add_test(NAME ${TESTNAME} COMMAND  ${EXECUTABLE} -c 236.831641 -0.39362878 0.004
 set_tests_properties (${TESTNAME}
                       PROPERTIES PASS_REGULAR_EXPRESSION
                          "TEC =     22.33570")
+
+set(TESTNAME bin_command_line_ko_wrong_month)
+add_test(NAME ${TESTNAME} COMMAND  ${EXECUTABLE} -c 236.831641 -0.39362878 0.00402826613 13 0 297.66 82.49 78.11 8.23 54.29 20281546.18)
+set_tests_properties (${TESTNAME}
+                    PROPERTIES PASS_REGULAR_EXPRESSION
+                        "Invalid month 13")
