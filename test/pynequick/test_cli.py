@@ -1,17 +1,21 @@
 import datetime
-import io
+import tempfile
 
 from pynequick import cli
 
 def test__cli():
 
-    fh = io.StringIO()
-    cli.to_gim_file(cli.NequickCoeffs(236.831641, -0.39362878, 0.00402826613), datetime.datetime.now(), fh)
+    with tempfile.NamedTemporaryFile(mode='wt') as fh:
+        gim_handler = cli.GimFileHandler(fh)
+        cli.to_gim(cli.NequickCoeffs(236.831641, -0.39362878, 0.00402826613), datetime.datetime.now(), gim_handler = gim_handler)
 
-    doc = fh.getvalue()
+        fh.seek(0)
 
-    assert '# epoch: ' in doc
-    assert '# longitude:' in doc
-    assert '# latitude:' in doc
+        with open(fh.name, mode='rt') as fin:
+            doc = fin.read()
 
-    assert len(doc.splitlines()) == 74
+            assert '# epoch: ' in doc
+            assert '# longitude:' in doc
+            assert '# latitude:' in doc
+
+            assert len(doc.splitlines()) == 74

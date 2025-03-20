@@ -2,6 +2,7 @@
 Module that contains the client interface for the NeQuick model, which is
 a wrapper around the NeQuick JRC executable.
 """
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import argparse
 import datetime
@@ -27,8 +28,51 @@ class NequickCoeffs():
     def from_array(array: List[float]) -> 'NequickCoeffs':
         return NequickCoeffs(array[0], array[1], array[2])
 
+@dataclass
+class Gim():
+    epoch: datetime.datetime
+    longitudes: List[float]
+    latitudes: List[float]
+    vtec_values: List[List[float]]  # Grid of VTEC values n_latitudes (rows) x n_longitudes (columns)
 
-def to_gim_file(cofficients: NequickCoeffs, epoch:datetime.datetime, fout: io.TextIOWrapper):
+
+class GimHandler(ABC):
+
+    @abstractmethod
+    def process(self, gim: Gim):
+        """
+        Process a GIM file
+        """
+        pass
+
+class GimFileHandler(GimHandler):
+
+    def __init__(self, file: io.TextIOWrapper):
+        self.file = file
+
+    def process(self, gim: Gim):
+        """
+        Process a GIM file
+        """
+
+        lon_start = gim.longitudes[0]
+        lon_end = gim.longitudes[-1]
+        lon_n = len(gim.longitudes)
+
+        lat_start = gim.latitudes[0]
+        lat_end = gim.latitudes[-1]
+        lat_n = len(gim.latitudes)
+
+        header = f'# epoch: {gim.epoch.isoformat()}\n' + \
+                 f'# longitude:: start: {lon_start:7.2f} end: {lon_end:7.2f} n: {lon_n:3d}\n' + \
+                 f'# latitude:: start: {lat_start:7.2f} end: {lat_end:7.2f} n: {lat_n:3d}\n'
+
+        self.file.write(header)
+
+        np.savetxt(self.file, gim.vtec_values, "%7.3f")
+
+
+def to_gim(cofficients: NequickCoeffs, epoch:datetime.datetime, gim_handler: GimHandler = GimFileHandler(sys.stdout)):
     """
     """
 
@@ -62,22 +106,9 @@ def to_gim_file(cofficients: NequickCoeffs, epoch:datetime.datetime, fout: io.Te
             vtec_values = np.loadtxt(f, usecols=(9,))
             vtec_values = np.reshape(vtec_values, (len(_LATITUDES), len(_LONGITUDES)))
 
-        # Parse the output file and write the GIM file
-        lon_start = _LONGITUDES[0]
-        lon_end = _LONGITUDES[-1]
-        lon_n = len(_LONGITUDES)
+        gim = Gim(epoch, _LONGITUDES, _LATITUDES, vtec_values)
 
-        lat_start = _LATITUDES[0]
-        lat_end = _LATITUDES[-1]
-        lat_n = len(_LATITUDES)
-
-        header = f'# epoch: {epoch.isoformat()}\n' + \
-                 f'# longitude:: start: {lon_start:7.2f} end: {lon_end:7.2f} n: {lon_n:3d}\n' + \
-                 f'# latitude:: start: {lat_start:7.2f} end: {lat_end:7.2f} n: {lat_n:3d}\n'
-
-        fout.write(header)
-
-        np.savetxt(fout, vtec_values, "%7.3f")
+        gim_handler.process(gim)
 
 
 def main():
@@ -106,8 +137,12 @@ def main():
 
     coefficients = NequickCoeffs.from_array(args.coefficients)
 
-    fout = sys.stdout if args.output_file is None else args.output_file
-    to_gim_file(coefficients, args.epoch, fout)
+    gim_handler = GimFileHandler(sys.stdout)
+    if args.output_file is not None:
+        with open(args.output_file, 'wt') as f:
+            gim_handler = GimFileHandler(f)
+
+    to_gim(coefficients, args.epoch, gim_handler=gim_handler)
 
 
 def _parse_datetime(datetime_str):
