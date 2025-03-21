@@ -13,6 +13,11 @@ dependencies = [
     "numpy <2.0.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/mgfernan/NeQuickJRC"
+Source = "https://github.com/mgfernan/NeQuickJRC"
+Tracker = "https://github.com/mgfernan/NeQuickJRC/issues"
+
 [project.optional-dependencies]
 test = [
   "coverage >= 7.6.11",
@@ -71,7 +76,7 @@ sources = [
     "lib/CCIR/NeQuickG_JRC_ccir21.c",
     "lib/CCIR/NeQuickG_JRC_ccir22.c"
 ]
-include-dirs = ["nequick/", "nequick/_c_ext", "lib/", "lib/include"]
+include-dirs = ["nequick", "nequick/_c_ext", "lib", "lib/include"]
 extra-compile-args = ["-DFTR_MODIP_CCIR_AS_CONSTANTS"]  # Hardcode the CCIR coefficients in the library
 
 [tool.setuptools.packages.find]
@@ -88,10 +93,9 @@ tag_format = "{version}"
 
 [tool.semantic_release.branches.main]
 match = "(master)"
-prerelease = false
 
 [tool.semantic_release.changelog]
-exclude_commit_patterns = ["build", "ci", "doc", "chore", "test"]
+exclude_commit_patterns = ["build", "ci", "chore", "test"]
 
 [tool.semantic_release.remote]
 type = "github"
