@@ -28,8 +28,8 @@ jobs:
     # Specifying a GitHub environment is optional, but strongly encouraged
     environment: pypi
     permissions:
-      # IMPORTANT: this permission is mandatory for trusted publishing
-      id-token: write
+      contents: write  # This is required so that semantic release can create a commit
+      id-token: write  # this permission is mandatory for trusted publishing
 
     steps:
 
