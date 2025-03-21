@@ -1,5 +1,5 @@
 [project]
-name = "pynequick"
+name = "nequick"
 version = "0.1.0"
 description = "Package that wraps NeQuick in Python"
 authors = [
@@ -21,11 +21,55 @@ test = [
 ]
 
 [project.scripts]
-nequick = "pynequick.cli:main"
+nequick = "nequick.cli:main"
 
 [build-system]
 requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[[tool.setuptools.ext-modules]]
+name = "nequick._c_ext"
+sources = [
+    "nequick/_c_ext/src/mtable_init.c",
+    "lib/ITU_R_P_371_8.c",
+    "lib/NeQuickG_JRC.c",
+    "lib/NeQuickG_JRC_Gauss_Kronrod_integration.c",
+    "lib/NeQuickG_JRC_MODIP.c",
+    "lib/NeQuickG_JRC_MODIP_grid.c",
+    "lib/NeQuickG_JRC_TEC_integration.c",
+    "lib/NeQuickG_JRC_coordinates.c",
+    "lib/NeQuickG_JRC_electron_density.c",
+    "lib/NeQuickG_JRC_geometry.c",
+    "lib/NeQuickG_JRC_input_data.c",
+    "lib/NeQuickG_JRC_interpolate.c",
+    "lib/NeQuickG_JRC_iono_E_layer.c",
+    "lib/NeQuickG_JRC_iono_F1_layer.c",
+    "lib/NeQuickG_JRC_iono_F2_layer.c",
+    "lib/NeQuickG_JRC_iono_F2_layer_fourier_coefficients.c",
+    "lib/NeQuickG_JRC_iono_profile.c",
+    "lib/NeQuickG_JRC_math_utils.c",
+    "lib/NeQuickG_JRC_ray.c",
+    "lib/NeQuickG_JRC_ray_slant.c",
+    "lib/NeQuickG_JRC_ray_vertical.c",
+    "lib/NeQuickG_JRC_solar.c",
+    "lib/NeQuickG_JRC_solar_activity.c",
+    "lib/NeQuickG_JRC_time.c",
+    "lib/CCIR/NeQuickG_JRC_CCIR.c",
+    "lib/CCIR/NeQuickG_JRC_ccir11.c",
+    "lib/CCIR/NeQuickG_JRC_ccir12.c",
+    "lib/CCIR/NeQuickG_JRC_ccir13.c",
+    "lib/CCIR/NeQuickG_JRC_ccir14.c",
+    "lib/CCIR/NeQuickG_JRC_ccir15.c",
+    "lib/CCIR/NeQuickG_JRC_ccir16.c",
+    "lib/CCIR/NeQuickG_JRC_ccir17.c",
+    "lib/CCIR/NeQuickG_JRC_ccir18.c",
+    "lib/CCIR/NeQuickG_JRC_ccir19.c",
+    "lib/CCIR/NeQuickG_JRC_ccir20.c",
+    "lib/CCIR/NeQuickG_JRC_ccir21.c",
+    "lib/CCIR/NeQuickG_JRC_ccir22.c"
+]
+include-dirs = ["nequick/", "nequick/_c_ext", "lib/", "lib/include"]
+extra-compile-args = ["-DFTR_MODIP_CCIR_AS_CONSTANTS"]  # Hardcode the CCIR coefficients in the library
+
 [tool.setuptools.packages.find]
-include = ["pynequick", "pynequick.*"]
+include = ["nequick", "nequick.*"]
