@@ -32,7 +32,7 @@ release = [
 nequick = "nequick.cli:main"
 
 [build-system]
-requires = ["setuptools>=61", "wheel"]
+requires = ["setuptools>=61", "wheel", "setuptools-scm>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [[tool.setuptools.ext-modules]]
@@ -76,7 +76,7 @@ sources = [
     "lib/CCIR/NeQuickG_JRC_ccir21.c",
     "lib/CCIR/NeQuickG_JRC_ccir22.c"
 ]
-include-dirs = ["nequick", "nequick/_c_ext", "lib", "lib/include"]
+include-dirs = ["lib/include", "lib", "nequick", "nequick/_c_ext"]
 extra-compile-args = ["-DFTR_MODIP_CCIR_AS_CONSTANTS"]  # Hardcode the CCIR coefficients in the library
 
 [tool.setuptools.packages.find]
