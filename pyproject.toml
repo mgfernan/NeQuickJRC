@@ -19,6 +19,9 @@ test = [
   "pytest >= 8.3.4",
   "pytest-env >= 1.1.5"
 ]
+release = [
+  "python-semantic-release >= 9.4.0",
+]
 
 [project.scripts]
 nequick = "nequick.cli:main"
@@ -73,3 +76,22 @@ extra-compile-args = ["-DFTR_MODIP_CCIR_AS_CONSTANTS"]  # Hardcode the CCIR coef
 
 [tool.setuptools.packages.find]
 include = ["nequick", "nequick.*"]
+
+[tool.semantic_release]
+version_variables = [
+    "nequick/__init__.py:__version__"
+]
+version_toml = [
+    "pyproject.toml:project.version"
+]
+tag_format = "{version}"
+
+[tool.semantic_release.branches.main]
+match = "(main)"
+prerelease = false
+
+[tool.semantic_release.changelog]
+exclude_commit_patterns = ["build", "ci", "doc", "chore", "test"]
+
+[tool.semantic_release.remote]
+type = "github"

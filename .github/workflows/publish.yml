@@ -1,0 +1,61 @@
+name: Publish
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: make
+      run: |
+        - mkdir build
+        - cd build
+        - cmake ..
+        - make
+
+    - name: test
+      run: |
+        - ctest
+
+  tag_and_deploy:
+    needs: build
+
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'chore(release):')
+    runs-on: ubuntu-latest
+    # Specifying a GitHub environment is optional, but strongly encouraged
+    environment: pypi
+    permissions:
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # To fetch the tags
+          token: ${{ secrets.PYGNSS_GITHUB_TOKEN }}
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install release dependenceies
+        run: python -m pip install .[release]
+
+      - name: Semantic Release
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          semantic-release version
+        env:
+          # This is required to create a commit in the repo
+          GH_TOKEN: ${{secrets.PYGNSS_GITHUB_TOKEN}}
+
+      # Publish content of dist
+      - name: PyPi publish
+        uses: pypa/gh-action-pypi-publish@release/v1
