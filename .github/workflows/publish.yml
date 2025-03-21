@@ -11,14 +11,14 @@ jobs:
     - uses: actions/checkout@v4
     - name: make
       run: |
-        - mkdir build
-        - cd build
-        - cmake ..
-        - make
+        cmake .
+        make
+        pip install .[test]
 
     - name: test
       run: |
-        - ctest
+        ctest
+        pytest -v
 
   tag_and_deploy:
     needs: build
