@@ -5,7 +5,7 @@ on: [push]
 jobs:
   deploy:
 
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && github.event.head_commit.author.name == 'semantic-release'
     runs-on: ubuntu-latest
     # Specifying a GitHub environment is optional, but strongly encouraged
     environment: pypi
