@@ -87,7 +87,7 @@ version_toml = [
 tag_format = "{version}"
 
 [tool.semantic_release.branches.main]
-match = "(main)"
+match = "(master)"
 prerelease = false
 
 [tool.semantic_release.changelog]
