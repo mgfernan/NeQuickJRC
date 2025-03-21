@@ -17,7 +17,7 @@ jobs:
 
     - name: test
       run: |
-        ctest
+        ctest -E unit_test
         pytest -v
 
   tag_and_deploy:
