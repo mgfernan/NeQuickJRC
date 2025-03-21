@@ -50,16 +50,6 @@ vtec = nequick.compute_vtec(epoch, station_lat, station_lon)
 print(f"VTEC: {vtec}")
 ```
 
-## License
-@copyright European Union, 2019<br>
- This software has been released as free and open source software
- under the terms of the European Union Public Licence (EUPL), version 1.2,
- https://joinup.ec.europa.eu/sites/default/files/custom-page/attachment/eupl_v1.2_en.pdf <br>
- Questions? Submit your query at https://www.gsc-europa.eu
-Version: #NEQUICKG_VERSION<br>
-
-Release date: <b>10/12/2019</b>
-
 ## References
  - European GNSS (Galileo) Open Service. Ionospheric Correction Algorithm for Galileo Single Frequency Users, 1.2 September 2016
  - C standard ISO/IEC 9899:2011
@@ -71,17 +61,22 @@ The library has been refactored so that CMake is used as the compiler manager.
 Note that the `FTR_MODIP_CCIR_AS_CONSTANTS` has been set, therefore the CCIR
 grid and the MODIP files are preloaded as constants in the library
 
-To compile the library using CMAKE,
- - cd build
- - cmake [-DCMAKE_BUILD_TYPE=Debug] ..
- - make
- - make install (optional, for development)
+To compile the library using CMAKE, follow these instructions)
 
- This will create a library file libnequick.a
+```bash
+cd build
+cmake [-DCMAKE_BUILD_TYPE=Debug] ..
+make
+make install  # optional to make the executables and library system-wide
+```
 
-<h3>Usage of the test driver program</h3>
- - open terminal at bin/(selected_compiler)
- - run ./NeQuickG_JRC.exe -h for a list of options.
+This will create a library file `libnequick.a`, that can be used for other programs.
+To use the exeecutable:
+
+```bash
+# Execute the program to show a list of available options
+NeQuickG_JRC.exe -h
+```
 
 ## Acknowledgements
 
