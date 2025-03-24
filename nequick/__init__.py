@@ -26,7 +26,10 @@ class Coefficients():
         return Coefficients(array[0], array[1], array[2])
 
 
-def to_gim(cofficients: Coefficients, epoch: datetime.datetime, gim_handler: GimHandler = GimFileHandler(sys.stdout)):
+def to_gim(cofficients: Coefficients, epoch: datetime.datetime,
+           latitudes: List[float] = _LATITUDES,
+           longitudes: List[float] = _LONGITUDES,
+           gim_handler: GimHandler = GimFileHandler(sys.stdout)):
     """
     Generate a Global Ionospheric Map (GIM) using the NeQuick model based on the
     given coefficients and epoch.
@@ -44,6 +47,12 @@ def to_gim(cofficients: Coefficients, epoch: datetime.datetime, gim_handler: Gim
         The epoch (date and time) for which the GIM is generated. This must be a
         `datetime.datetime` object.
     :type epoch: datetime.datetime
+
+    :param latitudes: List of latitudes for which the GIM shall be computed
+    :type latitudes: List[float]
+
+    :param longitudes: List of longitudes for which the GIM shall be computed
+    :type longitudes: List[float]
 
     :param gim_handler:
         An optional handler to process the generated GIM. By default, the GIM is written
@@ -73,12 +82,12 @@ def to_gim(cofficients: Coefficients, epoch: datetime.datetime, gim_handler: Gim
 
     vtec_values = []
 
-    for lat in _LATITUDES:
+    for lat in latitudes:
         lat_row = []
-        for lon in _LONGITUDES:
+        for lon in longitudes:
             lat_row.append(nequick.compute_vtec(epoch, lon, lat))
         vtec_values.append(lat_row)
 
-    gim = Gim(epoch, _LONGITUDES, _LATITUDES, vtec_values)
+    gim = Gim(epoch, longitudes, latitudes, vtec_values)
 
     gim_handler.process(gim)
