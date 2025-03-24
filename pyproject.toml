@@ -1,6 +1,6 @@
 [project]
 name = "nequick"
-version = "0.1.0"
+version = "0.2.0"
 description = "Package that wraps NeQuick in Python"
 authors = [
   { name = "Miquel Garcia-Fernandez", email = "miquel.garcia.fernandez@upc.edu" }

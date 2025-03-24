@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.2.0 (2025-03-24)
+
+### Features
+
+- **nequick**: Expose latitudes in to_gim method
+  ([`08cb9ba`](https://github.com/mgfernan/NeQuickJRC/commit/08cb9ba692752e2478a981f66f0ecdc0cbf2c996))
+
+
 ## v0.1.0 (2025-03-21)
 
 ### Features

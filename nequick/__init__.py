@@ -10,7 +10,7 @@ from .gim import Gim, GimHandler, GimFileHandler
 
 __all__ = ["NeQuick"]
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 _LONGITUDES = np.linspace(-180, 180, 73)
 _LATITUDES = np.linspace(-87.5, 87.5, 71)
