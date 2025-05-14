@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.3.0 (2025-05-14)
+
+### Features
+
+- **nequick**: Add nequick.Coefficients.to_dict method
+  ([`fc3824c`](https://github.com/mgfernan/NeQuickJRC/commit/fc3824c7c78b76e569b484a52e46837faf4f90bd))
+
+
 ## v0.2.0 (2025-03-24)
 
 ### Features
