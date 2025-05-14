@@ -1,0 +1,22 @@
+{
+  "name": "NeQuick Development Container",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "settings": {
+    "python.pythonPath": "/usr/local/bin/python"
+  },
+  "extensions": [
+    "ms-python.python",
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+    "ms-python.python",
+    "ms-python.flake8",
+    "ms-python.pylint",
+    "ms-vscode.makefile-tools"
+  ],
+  "updateRemoteUserUID": true,
+  "workspaceFolder": "/workspace"
+
+}
