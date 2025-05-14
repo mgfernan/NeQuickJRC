@@ -3,7 +3,7 @@ import glob
 import os
 import pytest
 
-from nequick import NeQuick
+from nequick import NeQuick, Coefficients
 
 
 # Path to the benchmark folder
@@ -40,3 +40,21 @@ def test__benchmarks(input_file: str):
                                         sat_lon, sat_lat, sat_hgt)
 
             assert stec == pytest.approx(expected_stec, abs=1e-3)
+
+
+def test__nequick_coefficients():
+    """
+    Test the NeQuick model coefficients
+    """
+
+    # Test the coefficients
+    nequick = Coefficients(236.831641, -0.39362878, 0.00402826613)
+
+    assert nequick.a0 == 236.831641
+    assert nequick.a1 == -0.39362878
+    assert nequick.a2 == 0.00402826613
+
+    coeffs_dict = nequick.to_dict()
+    assert coeffs_dict["a0"] == 236.831641
+    assert coeffs_dict["a1"] == -0.39362878
+    assert coeffs_dict["a2"] == 0.00402826613

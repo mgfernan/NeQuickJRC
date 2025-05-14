@@ -25,6 +25,20 @@ class Coefficients():
     def from_array(array: List[float]) -> 'Coefficients':
         return Coefficients(array[0], array[1], array[2])
 
+    def to_dict(self) -> dict:
+        """
+        Convert the coefficients to a dictionary. Use this method when you want to
+        make the contents of the class serializable to JSON or similar formats.
+
+        :return: A dictionary containing the coefficients.
+        :rtype: dict
+        """
+        return {
+            "a0": self.a0,
+            "a1": self.a1,
+            "a2": self.a2
+        }
+
 
 def to_gim(cofficients: Coefficients, epoch: datetime.datetime,
            latitudes: List[float] = _LATITUDES,
