@@ -21,11 +21,13 @@ static int NeQuick_init(NeQuickObject *self, PyObject *args, PyObject *kwds) {
     }
 
     if (NEQUICK_OK != NeQuickG.init(NULL, NULL, &self->nequick_handle)) {
+        PyErr_SetString(PyExc_RuntimeError, "failed to initialize NeQuick context");
         goto exit;
     }
 
     if (NEQUICK_OK != NeQuickG.set_solar_activity_coefficients(
         self->nequick_handle, a, 3)) {
+        PyErr_SetString(PyExc_RuntimeError, "failed to set NeQuick solar activity coefficients");
         goto exit;
     }
 
@@ -76,19 +78,22 @@ static PyObject *NeQuick_compute_stec(NeQuickObject *self, PyObject *args) {
     double decimal_hour = hour + (minute / 60.0) + (second / 3600.0);
 
     if (NeQuickG.set_time(self->nequick_handle, month, decimal_hour) != NEQUICK_OK) {
-        goto exit;
+        PyErr_SetString(PyExc_RuntimeError, "failed to set NeQuick time");
+        return NULL;
     }
     if (NeQuickG.set_receiver_position(self->nequick_handle, pos[0], pos[1], pos[2]) != NEQUICK_OK) {
-        goto exit;
+        PyErr_SetString(PyExc_RuntimeError, "failed to set receiver position");
+        return NULL;
     }
     if (NeQuickG.set_satellite_position(self->nequick_handle, sat_pos[0], sat_pos[1], sat_pos[2]) != NEQUICK_OK) {
-        goto exit;
+        PyErr_SetString(PyExc_RuntimeError, "failed to set satellite position");
+        return NULL;
     }
     if (NeQuickG.get_total_electron_content(self->nequick_handle, &stec) != NEQUICK_OK) {
-        goto exit;
+        PyErr_SetString(PyExc_RuntimeError, "failed to compute STEC for the provided ray geometry");
+        return NULL;
     }
 
-exit:
     return Py_BuildValue("d", stec);  // Return the computed STEC
 }
 
@@ -115,6 +120,7 @@ static PyObject *NeQuick_compute_vtec(NeQuickObject *self, PyObject *args) {
     }
 
     PyObject *stec_result = NeQuick_compute_stec(self, args_stec);
+    Py_DECREF(args_stec);
     if (stec_result == NULL) {
         return NULL;  // Propagate the error if compute_stec fails
     }
