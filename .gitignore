@@ -4,3 +4,16 @@ __pycache__
 *.egg-info
 
 *.so
+
+.venv
+
+CMakeFiles
+*.cmake
+Makefile
+
+*.o
+*.a
+
+CMakeCache.txt
+DartConfiguration.tcl
+app
