@@ -13,7 +13,10 @@ Makefile
 
 *.o
 *.a
+*.e
 
 CMakeCache.txt
 DartConfiguration.tcl
 app
+
+Testing
