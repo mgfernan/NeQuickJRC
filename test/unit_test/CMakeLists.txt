@@ -26,5 +26,5 @@ add_executable (${EXECUTABLE} ${TEST_SOURCE_FILES})
 target_link_libraries(${EXECUTABLE} ${NEQUICK_LIB_NAME} m)
 
 
-add_test(NAME ${TEST_NAME} COMMAND ${EXECUTABLE})
+add_test(NAME ${TEST_NAME} COMMAND ${EXECUTABLE} ${CMAKE_SOURCE_DIR}/modip/modip2001_wrapped.asc ${CMAKE_SOURCE_DIR}/ccir)
 

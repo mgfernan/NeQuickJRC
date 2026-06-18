@@ -11,8 +11,14 @@
  */
 #include "NeQuickG_JRC_API_test.h"
 
+#include <math.h>
+
 #include "NeQuickG_JRC.h"
+#include "NeQuickG_JRC_context.h"
 #include "NeQuickG_JRC_macros.h"
+#include "NeQuickG_JRC_ray_slant.h"
+
+#include "macros.h"
 
 #ifndef FTR_MODIP_CCIR_AS_CONSTANTS
 static bool test_NULL_modip_file(
@@ -276,10 +282,243 @@ static bool test_bad_ray(
   return ret;
 }
 
+static bool setup_nequick(
+  const char* const pModip_file,
+  const char* const pCCIR_directory,
+  NeQuickG_handle* const pNequick) {
+
+  (void)pModip_file;
+  (void)pCCIR_directory;
+
+  if (NeQuickG.init(pModip_file, pCCIR_directory, pNequick) != NEQUICK_OK) {
+    return false;
+  }
+
+  const double_t az[NEQUICKG_AZ_COEFFICIENTS_COUNT] = {
+    236.831641,
+    -0.39362878,
+    0.00402826613,
+  };
+
+  if (NeQuickG.set_solar_activity_coefficients(
+    *pNequick,
+    az,
+    (size_t)NEQUICKG_AZ_COEFFICIENTS_COUNT) != NEQUICK_OK) {
+    NeQuickG.close(*pNequick);
+    *pNequick = NEQUICKG_INVALID_HANDLE;
+    return false;
+  }
+
+  if (NeQuickG.set_time(*pNequick, 3, 12.0) != NEQUICK_OK) {
+    NeQuickG.close(*pNequick);
+    *pNequick = NEQUICKG_INVALID_HANDLE;
+    return false;
+  }
+
+  return true;
+}
+
+static bool set_link_endpoints(
+  const NeQuickG_handle nequick,
+  const double_t receiver_lon,
+  const double_t receiver_lat,
+  const double_t receiver_height_m,
+  const double_t satellite_lon,
+  const double_t satellite_lat,
+  const double_t satellite_height_m) {
+
+  if (NeQuickG.set_receiver_position(
+      nequick,
+      receiver_lon,
+      receiver_lat,
+      receiver_height_m) != NEQUICK_OK) {
+    return false;
+  }
+
+  if (NeQuickG.set_satellite_position(
+      nequick,
+      satellite_lon,
+      satellite_lat,
+      satellite_height_m) != NEQUICK_OK) {
+    return false;
+  }
+
+  return true;
+}
+
+static bool test_limb_path_matches_trapezoid_reference(
+  const char* const pModip_file,
+  const char* const pCCIR_directory) {
+
+  NeQuickG_handle nequick;
+  if (!setup_nequick(pModip_file, pCCIR_directory, &nequick)) {
+    return false;
+  }
+
+  bool ret = true;
+  if (!set_link_endpoints(
+      nequick,
+      -20.0,
+      0.0,
+      700000.0,
+      20.0,
+      0.0,
+      700000.0)) {
+    NeQuickG.close(nequick);
+    return false;
+  }
+
+  double_t tec_model = 0.0;
+  if (NeQuickG.get_total_electron_content(nequick, &tec_model) != NEQUICK_OK) {
+    NeQuickG.close(nequick);
+    return false;
+  }
+
+  NeQuickG_context_t* const pContext = (NeQuickG_context_t*)nequick;
+  const double_t s_lo = min(
+    pContext->ray.slant.receiver_s_km,
+    pContext->ray.slant.satellite_s_km);
+  const double_t s_hi = max(
+    pContext->ray.slant.receiver_s_km,
+    pContext->ray.slant.satellite_s_km);
+
+  if (!(s_lo < 0.0 && s_hi > 0.0)) {
+    ret = false;
+  }
+
+  const size_t segments = 4000;
+  const double_t ds = (s_hi - s_lo) / (double_t)segments;
+
+  double_t reference_integral = 0.0;
+  for (size_t i = 0; i <= segments; i++) {
+    const double_t s = s_lo + ((double_t)i * ds);
+    double_t density;
+    if (ray_slant_get_electron_density(pContext, s, &density) != NEQUICK_OK) {
+      ret = false;
+      break;
+    }
+
+    const double_t weight = (i == 0 || i == segments) ? 0.5 : 1.0;
+    reference_integral += (weight * density);
+  }
+
+  const double_t tec_reference = (reference_integral * ds) / 1.0e13;
+  if (!THRESHOLD_COMPARE(tec_model, tec_reference, 3.0e-2)) {
+    ret = false;
+  }
+
+  NeQuickG.close(nequick);
+  return ret;
+}
+
+static bool test_receiver_above_transmitter_supported(
+  const char* const pModip_file,
+  const char* const pCCIR_directory) {
+
+  NeQuickG_handle nequick;
+  if (!setup_nequick(pModip_file, pCCIR_directory, &nequick)) {
+    return false;
+  }
+
+  bool ret = true;
+  if (!set_link_endpoints(
+      nequick,
+      0.0,
+      0.0,
+      10000000.0,
+      20.0,
+      0.0,
+      5000000.0)) {
+    NeQuickG.close(nequick);
+    return false;
+  }
+
+  double_t tec = 0.0;
+  if (NeQuickG.get_total_electron_content(nequick, &tec) != NEQUICK_OK) {
+    ret = false;
+  }
+
+  if (!(tec > 0.0)) {
+    ret = false;
+  }
+
+  NeQuickG.close(nequick);
+  return ret;
+}
+
+static bool test_near_grazing_perigee_supported(
+  const char* const pModip_file,
+  const char* const pCCIR_directory) {
+
+  NeQuickG_handle nequick;
+  if (!setup_nequick(pModip_file, pCCIR_directory, &nequick)) {
+    return false;
+  }
+
+  bool ret = true;
+  if (!set_link_endpoints(
+      nequick,
+      -24.75,
+      0.0,
+      700000.0,
+      24.75,
+      0.0,
+      700000.0)) {
+    NeQuickG.close(nequick);
+    return false;
+  }
+
+  double_t tec = 0.0;
+  if (NeQuickG.get_total_electron_content(nequick, &tec) != NEQUICK_OK) {
+    ret = false;
+  }
+
+  if (!(tec > 0.0)) {
+    ret = false;
+  }
+
+  NeQuickG.close(nequick);
+  return ret;
+}
+
+static bool test_subsurface_perigee_rejected(
+  const char* const pModip_file,
+  const char* const pCCIR_directory) {
+
+  NeQuickG_handle nequick;
+  if (!setup_nequick(pModip_file, pCCIR_directory, &nequick)) {
+    return false;
+  }
+
+  bool ret = true;
+  if (!set_link_endpoints(
+      nequick,
+      -30.0,
+      0.0,
+      700000.0,
+      30.0,
+      0.0,
+      700000.0)) {
+    NeQuickG.close(nequick);
+    return false;
+  }
+
+  double_t tec = 0.0;
+  if (NeQuickG.get_total_electron_content(nequick, &tec) == NEQUICK_OK) {
+    ret = false;
+  }
+
+  NeQuickG.close(nequick);
+  return ret;
+}
+
 
 #if defined(FTR_MODIP_CCIR_AS_CONSTANTS) && (defined(__GNUC__) || defined(__GNUG__))
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wmissing-prototypes"
+#endif
+#ifdef FTR_MODIP_CCIR_AS_CONSTANTS
+#undef NeQuickG_API_test
 #endif
 bool NeQuickG_API_test(
   const char* const pModip_file,
@@ -317,6 +556,26 @@ bool NeQuickG_API_test(
   }
 
   if (!test_bad_ray(pModip_file, pCCIR_folder)) {
+    ret = false;
+  }
+
+  if (!test_limb_path_matches_trapezoid_reference(pModip_file, pCCIR_folder)) {
+    LOG_ERROR("Limb path reference test failed.");
+    ret = false;
+  }
+
+  if (!test_receiver_above_transmitter_supported(pModip_file, pCCIR_folder)) {
+    LOG_ERROR("Receiver-above-transmitter test failed.");
+    ret = false;
+  }
+
+  if (!test_near_grazing_perigee_supported(pModip_file, pCCIR_folder)) {
+    LOG_ERROR("Near-grazing perigee test failed.");
+    ret = false;
+  }
+
+  if (!test_subsurface_perigee_rejected(pModip_file, pCCIR_folder)) {
+    LOG_ERROR("Subsurface perigee rejection test failed.");
     ret = false;
   }
 

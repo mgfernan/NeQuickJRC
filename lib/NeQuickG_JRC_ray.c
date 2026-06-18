@@ -18,7 +18,6 @@
 #include "NeQuickG_JRC_geometry.h"
 #include "NeQuickG_JRC_math_utils.h"
 
-#define NEQUICKG_JRC_RAY_ZENITH_ANGLE_MAX_DEGREE (90.0)
 #define NEQUICKG_JRC_RAY_IS_VERTICAL_PERIGEE_EPSILON_KM (0.1)
 #define NEQUICKG_JRC_RAY_IS_AT_POLE_EPSILON (1.0e-10)
 
@@ -144,19 +143,6 @@ static int32_t ray_get_radius(
 
   pRay->slant.perigee_radius_km = pStation_position->radius_km * pZenith_angle->sin;
 
-  // See F.2.5.1. NeQuick internal function NeqGetRayProperties
-  // if1 invalid ray, i.e. |pdZeta| > 90.0 and pstRay.dR < Re
-  if ((fabs(pZenith_angle->rad) >
-      NEQUICKG_JRC_DEGREE_TO_RAD(NEQUICKG_JRC_RAY_ZENITH_ANGLE_MAX_DEGREE))
-      &&
-      !position_is_exterior(pRay->slant.perigee_radius_km)) {
-    NEQUICK_ERROR_RETURN(
-      NEQUICK_ERROR_SRC_RAY,
-      NEQUICK_ERROR_CODE_BAD_RAY,
-      "the ray is not correct, angle(rad) = %lf, slant perigee radius (km) = %lf",
-       pZenith_angle->rad, pRay->slant.perigee_radius_km);
-  }
-
   pRay->is_vertical =
     (pRay->slant.perigee_radius_km <
       NEQUICKG_JRC_RAY_IS_VERTICAL_PERIGEE_EPSILON_KM);
@@ -270,10 +256,26 @@ static int32_t on_slant_ray(ray_context_t* const pRay) {
     get_azimuth(pRay);
 
     pRay->slant.receiver_distance_km =
-    get_slant_distance(pRay, pRay->receiver_position.radius_km);
+      get_slant_distance(pRay, pRay->receiver_position.radius_km);
 
     pRay->slant.satellite_distance_km =
       get_slant_distance(pRay, pRay->satellite_position.radius_km);
+
+    pRay->slant.receiver_s_km =
+      (zenith_angle.degree <= 90.0 ? 1.0 : -1.0) *
+      pRay->slant.receiver_distance_km;
+
+    pRay->slant.satellite_s_km = pRay->slant.satellite_distance_km;
+
+    if ((pRay->slant.receiver_s_km < 0.0) &&
+        (pRay->slant.satellite_s_km > 0.0) &&
+        !position_is_exterior(pRay->slant.perigee_radius_km)) {
+      NEQUICK_ERROR_RETURN(
+        NEQUICK_ERROR_SRC_RAY,
+        NEQUICK_ERROR_CODE_BAD_RAY,
+        "invalid ray intersects Earth, perigee radius (km) = %lf",
+        pRay->slant.perigee_radius_km);
+    }
   }
   return NEQUICK_OK;
 }
@@ -313,4 +315,3 @@ int32_t ray_get(
 
 #undef NEQUICKG_JRC_RAY_IS_AT_POLE_EPSILON
 #undef NEQUICKG_JRC_RAY_IS_VERTICAL_PERIGEE_EPSILON_KM
-#undef NEQUICKG_JRC_RAY_ZENITH_ANGLE_MAX_DEGREE

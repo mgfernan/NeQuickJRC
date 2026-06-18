@@ -49,7 +49,7 @@ static const NeQuickG_ray_test_t
       false,
       {
         {-0.164640718, 0.986353605},
-        4169.486317342, 0.0, 0.0
+        4169.486317342, 0.0, 0.0, 0.0, 0.0
       }
     }
   },
@@ -101,6 +101,22 @@ static bool NeQuickG_ray_test_impl(void) {
         pExpected_context->slant.perigee_radius_km,
         NEQUICK_G_JRC_RAY_TEST_RESULT_EPSILON)) {
       LOG_ERROR("Rey radius perigee is not the expected.");
+      return false;
+    }
+
+    if (!THRESHOLD_COMPARE(
+        context.slant.receiver_s_km,
+        context.slant.receiver_distance_km,
+        NEQUICK_G_JRC_RAY_TEST_RESULT_EPSILON)) {
+      LOG_ERROR("Receiver signed slant is not consistent for a positive-elevation ray.");
+      return false;
+    }
+
+    if (!THRESHOLD_COMPARE(
+        context.slant.satellite_s_km,
+        context.slant.satellite_distance_km,
+        NEQUICK_G_JRC_RAY_TEST_RESULT_EPSILON)) {
+      LOG_ERROR("Satellite signed slant is not consistent for a positive-elevation ray.");
       return false;
     }
 

@@ -35,6 +35,10 @@ typedef struct NeQuickG_ray_slant_info_st {
   double_t receiver_distance_km;
   /** Distance from satellite to ray perigee in km */
   double_t satellite_distance_km;
+  /** Signed slant coordinate of receiver measured from perigee in km */
+  double_t receiver_s_km;
+  /** Signed slant coordinate of satellite measured from perigee in km */
+  double_t satellite_s_km;
 } NeQuickG_ray_slant_info_t;
 
 /** Ray context */
