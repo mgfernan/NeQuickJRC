@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <Python.h>
 #include <datetime.h>
 #include <structmember.h>
@@ -8,7 +9,9 @@
 typedef struct {
     PyObject_HEAD
     NeQuickG_handle nequick_handle;
+    PyObject *weakreflist;
 } NeQuickObject;
+
 
 // __init__ method: Initialize the NeQuick object with 3 coefficients
 static int NeQuick_init(NeQuickObject *self, PyObject *args, PyObject *kwds) {
@@ -31,10 +34,27 @@ static int NeQuick_init(NeQuickObject *self, PyObject *args, PyObject *kwds) {
         goto exit;
     }
 
+    self->weakreflist = NULL;
+
     ret = 0;  // Return 0 on success
 exit:
     return ret;
 }
+
+
+static void NeQuick_dealloc(NeQuickObject *self) {
+    if (self->weakreflist != NULL) {
+        PyObject_ClearWeakRefs((PyObject *)self);
+    }
+
+    if (self->nequick_handle != NEQUICKG_INVALID_HANDLE) {
+        NeQuickG.close(self->nequick_handle);
+        self->nequick_handle = NEQUICKG_INVALID_HANDLE;
+    }
+
+    Py_TYPE(self)->tp_free((PyObject *)self);
+}
+
 
 // Method to update the coefficients
 static PyObject *NeQuick_update_coefficients(NeQuickObject *self, PyObject *args) {
@@ -168,11 +188,13 @@ static PyTypeObject NeQuickType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "nequick.NeQuick",
     .tp_basicsize = sizeof(NeQuickObject),
+    .tp_dealloc = (destructor)NeQuick_dealloc,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_doc = "NeQuick model",
     .tp_methods = NeQuick_methods,
     .tp_init = (initproc)NeQuick_init,
     .tp_new = PyType_GenericNew,
+    .tp_weaklistoffset = offsetof(NeQuickObject, weakreflist),
 };
 
 // Module initialization function

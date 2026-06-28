@@ -1,7 +1,9 @@
 import datetime
+import gc
 import glob
 import os
 import pytest
+import weakref
 
 from nequick import NeQuick, Coefficients
 
@@ -93,3 +95,13 @@ def test__compute_stec_raises_on_bad_ray():
             -30.0, 0.0, 700000.0,
             30.0, 0.0, 700000.0,
         )
+
+
+def test__nequick_dealloc_releases_python_object():
+    obj = NeQuick(236.831641, -0.39362878, 0.00402826613)
+    ref = weakref.ref(obj)
+
+    del obj
+    gc.collect()
+
+    assert ref() is None
