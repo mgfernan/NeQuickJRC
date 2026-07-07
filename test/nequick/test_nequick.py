@@ -97,6 +97,72 @@ def test__compute_stec_raises_on_bad_ray():
         )
 
 
+def test__compute_ne_profile_vertical_geometry_default_step():
+    nequick = NeQuick(236.831641, -0.39362878, 0.00402826613)
+
+    profile = nequick.compute_ne_profile(
+        datetime.datetime(2025, 3, 21, 12, 0, 0),
+        0.0, 0.0, 100000.0,
+        0.0, 0.0, 130000.0,
+    )
+
+    assert len(profile) == 4
+    assert profile[0][0] == pytest.approx(0.0)
+    assert profile[-1][0] == pytest.approx(30.0)
+    assert profile[0][1] == pytest.approx(100000.0)
+    assert profile[-1][1] == pytest.approx(130000.0)
+    assert all(len(sample) == 3 for sample in profile)
+    assert all(sample[2] >= 0.0 for sample in profile)
+
+
+def test__compute_ne_profile_supports_custom_step():
+    nequick = NeQuick(236.831641, -0.39362878, 0.00402826613)
+
+    profile = nequick.compute_ne_profile(
+        datetime.datetime(2025, 3, 21, 12, 0, 0),
+        0.0, 0.0, 100000.0,
+        0.0, 0.0, 130000.0,
+        7.5,
+    )
+
+    distances = [sample[0] for sample in profile]
+    assert distances == pytest.approx([0.0, 7.5, 15.0, 22.5, 30.0])
+
+
+def test__compute_ne_profile_supports_slant_geometry():
+    nequick = NeQuick(236.831641, -0.39362878, 0.00402826613)
+
+    profile = nequick.compute_ne_profile(
+        datetime.datetime(2025, 3, 21, 12, 0, 0),
+        -20.0, 0.0, 700000.0,
+        20.0, 0.0, 700000.0,
+        250.0,
+    )
+
+    distances = [sample[0] for sample in profile]
+    heights = [sample[1] for sample in profile]
+
+    assert len(profile) > 2
+    assert distances[0] == pytest.approx(0.0)
+    assert distances[-1] > 0.0
+    assert heights[0] == pytest.approx(700000.0)
+    assert heights[-1] == pytest.approx(700000.0)
+    assert min(heights) < 700000.0
+    assert all(sample[2] >= 0.0 for sample in profile)
+
+
+def test__compute_ne_profile_rejects_non_positive_step():
+    nequick = NeQuick(236.831641, -0.39362878, 0.00402826613)
+
+    with pytest.raises(ValueError):
+        nequick.compute_ne_profile(
+            datetime.datetime(2025, 3, 21, 12, 0, 0),
+            0.0, 0.0, 100000.0,
+            0.0, 0.0, 130000.0,
+            0.0,
+        )
+
+
 def test__nequick_dealloc_releases_python_object():
     obj = NeQuick(236.831641, -0.39362878, 0.00402826613)
     ref = weakref.ref(obj)

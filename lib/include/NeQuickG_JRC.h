@@ -236,6 +236,34 @@ struct NeQuickG_library {
     const NeQuickG_handle,
     double_t* const TEC);
 
+  /** Gets the ray path length in km for the current receiver-satellite geometry.
+   * Needs previous calls to set_time, set_receiver_position and set_satellite_position.
+   *
+   * @param[in] NeQuickG_handle NequickG JRC handle
+   * @param[out] pPath_length_km output ray path length in km
+   *
+   * @return on success NEQUICK_OK
+   */
+  int32_t (*get_ray_path_length)(
+    const NeQuickG_handle,
+    double_t* const pPath_length_km);
+
+  /** Gets the electron density sample for the current ray geometry.
+   * Needs previous calls to set_time, set_receiver_position and set_satellite_position.
+   *
+   * @param[in] NeQuickG_handle NequickG JRC handle
+   * @param[in] distance_from_start_km distance from the receiver along the ray in km
+   * @param[out] pHeight_meters ellipsoidal height of the sampled point in meters
+   * @param[out] pElectron_density electron density at the sampled point in electrons/m^3
+   *
+   * @return on success NEQUICK_OK
+   */
+  int32_t (*get_ray_point_electron_density)(
+    const NeQuickG_handle,
+    const double_t distance_from_start_km,
+    double_t* const pHeight_meters,
+    double_t* const pElectron_density);
+
   /** Input data set to std output
    *
    * @param[in] NeQuickG_chandle NequickG JRC handle

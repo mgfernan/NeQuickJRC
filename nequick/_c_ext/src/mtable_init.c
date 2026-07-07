@@ -13,6 +13,66 @@ typedef struct {
 } NeQuickObject;
 
 
+static int NeQuick_configure_ray(
+    NeQuickObject *self,
+    PyObject *epoch_obj,
+    const double *pos,
+    const double *sat_pos) {
+
+    int month;
+    int hour;
+    int minute;
+    int second;
+    double decimal_hour;
+
+    if (!PyDateTime_Check(epoch_obj)) {
+        PyErr_SetString(PyExc_TypeError, "epoch must be a datetime object");
+        return -1;
+    }
+
+    month = PyDateTime_GET_MONTH(epoch_obj);
+    hour = PyDateTime_DATE_GET_HOUR(epoch_obj);
+    minute = PyDateTime_DATE_GET_MINUTE(epoch_obj);
+    second = PyDateTime_DATE_GET_SECOND(epoch_obj);
+    decimal_hour = hour + (minute / 60.0) + (second / 3600.0);
+
+    if (NeQuickG.set_time(self->nequick_handle, month, decimal_hour) != NEQUICK_OK) {
+        PyErr_SetString(PyExc_RuntimeError, "failed to set NeQuick time");
+        return -1;
+    }
+    if (NeQuickG.set_receiver_position(self->nequick_handle, pos[0], pos[1], pos[2]) != NEQUICK_OK) {
+        PyErr_SetString(PyExc_RuntimeError, "failed to set receiver position");
+        return -1;
+    }
+    if (NeQuickG.set_satellite_position(self->nequick_handle, sat_pos[0], sat_pos[1], sat_pos[2]) != NEQUICK_OK) {
+        PyErr_SetString(PyExc_RuntimeError, "failed to set satellite position");
+        return -1;
+    }
+
+    return 0;
+}
+
+
+static int NeQuick_append_ne_profile_sample(
+    PyObject *profile,
+    double distance_km,
+    double height_meters,
+    double electron_density) {
+
+    PyObject *sample = Py_BuildValue("(ddd)", distance_km, height_meters, electron_density);
+    int ret;
+
+    if (sample == NULL) {
+        return -1;
+    }
+
+    ret = PyList_Append(profile, sample);
+    Py_DECREF(sample);
+
+    return ret;
+}
+
+
 // __init__ method: Initialize the NeQuick object with 3 coefficients
 static int NeQuick_init(NeQuickObject *self, PyObject *args, PyObject *kwds) {
 
@@ -84,29 +144,7 @@ static PyObject *NeQuick_compute_stec(NeQuickObject *self, PyObject *args) {
         return NULL;  // Return NULL on failure
     }
 
-    // Ensure epoch is a datetime object
-    if (!PyDateTime_Check(epoch_obj)) {
-        PyErr_SetString(PyExc_TypeError, "epoch must be a datetime object");
-        return NULL;
-    }
-
-    // Extract month and decimal hour from the datetime object
-    int month = PyDateTime_GET_MONTH(epoch_obj);
-    int hour = PyDateTime_DATE_GET_HOUR(epoch_obj);
-    int minute = PyDateTime_DATE_GET_MINUTE(epoch_obj);
-    int second = PyDateTime_DATE_GET_SECOND(epoch_obj);
-    double decimal_hour = hour + (minute / 60.0) + (second / 3600.0);
-
-    if (NeQuickG.set_time(self->nequick_handle, month, decimal_hour) != NEQUICK_OK) {
-        PyErr_SetString(PyExc_RuntimeError, "failed to set NeQuick time");
-        return NULL;
-    }
-    if (NeQuickG.set_receiver_position(self->nequick_handle, pos[0], pos[1], pos[2]) != NEQUICK_OK) {
-        PyErr_SetString(PyExc_RuntimeError, "failed to set receiver position");
-        return NULL;
-    }
-    if (NeQuickG.set_satellite_position(self->nequick_handle, sat_pos[0], sat_pos[1], sat_pos[2]) != NEQUICK_OK) {
-        PyErr_SetString(PyExc_RuntimeError, "failed to set satellite position");
+    if (NeQuick_configure_ray(self, epoch_obj, pos, sat_pos) != 0) {
         return NULL;
     }
     if (NeQuickG.get_total_electron_content(self->nequick_handle, &stec) != NEQUICK_OK) {
@@ -115,6 +153,99 @@ static PyObject *NeQuick_compute_stec(NeQuickObject *self, PyObject *args) {
     }
 
     return Py_BuildValue("d", stec);  // Return the computed STEC
+}
+
+
+static PyObject *NeQuick_compute_ne_profile(NeQuickObject *self, PyObject *args) {
+
+    static const double DEFAULT_STEP_KM = 10.0;
+    static const double DISTANCE_TOLERANCE_KM = 1.0e-9;
+
+    PyObject *epoch_obj;
+    PyObject *profile;
+    double pos[3], sat_pos[3];
+    double step_km = DEFAULT_STEP_KM;
+    double path_length_km = 0.0;
+    double distance_km = 0.0;
+    double last_sampled_distance_km = NAN;
+
+    if (!PyArg_ParseTuple(
+            args,
+            "Odddddd|d",
+            &epoch_obj,
+            &pos[0],
+            &pos[1],
+            &pos[2],
+            &sat_pos[0],
+            &sat_pos[1],
+            &sat_pos[2],
+            &step_km)) {
+        return NULL;
+    }
+
+    if (step_km <= 0.0) {
+        PyErr_SetString(PyExc_ValueError, "step_km must be greater than zero");
+        return NULL;
+    }
+
+    if (NeQuick_configure_ray(self, epoch_obj, pos, sat_pos) != 0) {
+        return NULL;
+    }
+
+    if (NeQuickG.get_ray_path_length(self->nequick_handle, &path_length_km) != NEQUICK_OK) {
+        PyErr_SetString(PyExc_RuntimeError, "failed to compute ray length for the provided geometry");
+        return NULL;
+    }
+
+    profile = PyList_New(0);
+    if (profile == NULL) {
+        return NULL;
+    }
+
+    while (distance_km < path_length_km) {
+        double height_meters = NAN;
+        double electron_density = NAN;
+
+        if (NeQuickG.get_ray_point_electron_density(
+                self->nequick_handle,
+                distance_km,
+                &height_meters,
+                &electron_density) != NEQUICK_OK) {
+            Py_DECREF(profile);
+            PyErr_SetString(PyExc_RuntimeError, "failed to compute electron density profile sample");
+            return NULL;
+        }
+
+        if (NeQuick_append_ne_profile_sample(profile, distance_km, height_meters, electron_density) != 0) {
+            Py_DECREF(profile);
+            return NULL;
+        }
+
+        last_sampled_distance_km = distance_km;
+        distance_km += step_km;
+    }
+
+    if (isnan(last_sampled_distance_km) || fabs(last_sampled_distance_km - path_length_km) > DISTANCE_TOLERANCE_KM) {
+        double height_meters = NAN;
+        double electron_density = NAN;
+
+        if (NeQuickG.get_ray_point_electron_density(
+                self->nequick_handle,
+                path_length_km,
+                &height_meters,
+                &electron_density) != NEQUICK_OK) {
+            Py_DECREF(profile);
+            PyErr_SetString(PyExc_RuntimeError, "failed to compute electron density profile sample");
+            return NULL;
+        }
+
+        if (NeQuick_append_ne_profile_sample(profile, path_length_km, height_meters, electron_density) != 0) {
+            Py_DECREF(profile);
+            return NULL;
+        }
+    }
+
+    return profile;
 }
 
 // Method to compute VTEC based on epoch and coordinates (lat, lon)
@@ -170,6 +301,21 @@ static PyMethodDef NeQuick_methods[] = {
         ":param sat_alt (float): Altitude of the satellite in meters.\n\n"
         "Returns:\n"
         "    float: The computed Slant Total Electron Content (STEC)."
+    },
+    {"compute_ne_profile", (PyCFunction)NeQuick_compute_ne_profile, METH_VARARGS,
+        "Compute the electron density profile along the receiver-satellite ray.\n"
+        "Vertical and slant geometries are both supported, including occultation-like links.\n\n"
+        "Arguments:\n"
+        ":param epoch (datetime.datetime): The epoch for the computation.\n"
+        ":param station_lon (float): Longitude of the station in degrees.\n"
+        ":param station_lat (float): Latitude of the station in degrees.\n"
+        ":param station_alt (float): Altitude of the station in meters.\n"
+        ":param sat_lon (float): Longitude of the satellite in degrees.\n"
+        ":param sat_lat (float): Latitude of the satellite in degrees.\n"
+        ":param sat_alt (float): Altitude of the satellite in meters.\n"
+        ":param step_km (float, optional): Distance between consecutive samples in km. Defaults to 10 km.\n\n"
+        "Returns:\n"
+        "    list[tuple[float, float, float]]: Samples as (distance_from_start_km, ellipsoidal_height_m, electron_density_e_per_m3)."
     },
     {"compute_vtec", (PyCFunction)NeQuick_compute_vtec, METH_VARARGS,
         "Compute VTEC based on epoch and coordinates (lon, lat).\n\n"

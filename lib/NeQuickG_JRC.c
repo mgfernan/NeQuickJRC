@@ -18,7 +18,10 @@
 #include "NeQuickG_JRC_context.h"
 #include "NeQuickG_JRC_error.h"
 #include "NeQuickG_JRC_TEC_integration.h"
+#include "NeQuickG_JRC_geometry.h"
 #include "NeQuickG_JRC_ray.h"
+#include "NeQuickG_JRC_ray_slant.h"
+#include "NeQuickG_JRC_ray_vertical.h"
 #ifdef FTR_UNIT_TEST
 #include "NeQuickG_JRC_UT.h"
 #endif
@@ -56,6 +59,15 @@ static void get_solar_activity(
   NeQuickG_context_t* const pContext) {
   get_modip_impl(pContext);
   solar_activity_get(&pContext->solar_activity, pContext->modip.modip_degree);
+}
+
+static int32_t prepare_ray(NeQuickG_context_t* const pContext) {
+  get_solar_activity(pContext);
+
+  return ray_get(
+    &pContext->ray,
+    &pContext->input_data.station_position,
+    &pContext->input_data.satellite_position);
 }
 
 /** Checks if the handle is valid
@@ -170,12 +182,7 @@ static int32_t get_total_electron_content(
 
   NeQuickG_context_t* pContext = (NeQuickG_context_t*)(handle);
 
-  get_solar_activity(pContext);
-
-  ret = ray_get(
-    &pContext->ray,
-    &pContext->input_data.station_position,
-    &pContext->input_data.satellite_position);
+  ret = prepare_ray(pContext);
   if (ret != NEQUICK_OK) {
     return ret;
   }
@@ -186,6 +193,119 @@ static int32_t get_total_electron_content(
     *pTotal_electron_content = (*pTotal_electron_content / 1.0E13);
   }
   return ret;
+}
+
+/** {@ref NeQuickG_library.get_ray_path_length} */
+static int32_t get_ray_path_length(
+  const NeQuickG_handle handle,
+  double_t* const pPath_length_km) {
+
+  *pPath_length_km = 0.0;
+
+  int32_t ret = check_handle(handle);
+  if (ret != NEQUICK_OK) {
+    return ret;
+  }
+
+  NeQuickG_context_t* pContext = (NeQuickG_context_t*)(handle);
+  ret = prepare_ray(pContext);
+  if (ret != NEQUICK_OK) {
+    return ret;
+  }
+
+  if (pContext->ray.is_vertical) {
+    *pPath_length_km = fabs(
+      pContext->ray.satellite_position.height -
+      pContext->ray.receiver_position.height);
+  } else {
+    *pPath_length_km = fabs(
+      pContext->ray.slant.satellite_s_km -
+      pContext->ray.slant.receiver_s_km);
+  }
+
+  return NEQUICK_OK;
+}
+
+/** {@ref NeQuickG_library.get_ray_point_electron_density} */
+static int32_t get_ray_point_electron_density(
+  const NeQuickG_handle handle,
+  const double_t distance_from_start_km,
+  double_t* const pHeight_meters,
+  double_t* const pElectron_density) {
+
+  *pHeight_meters = NAN;
+  *pElectron_density = NAN;
+
+  int32_t ret = check_handle(handle);
+  if (ret != NEQUICK_OK) {
+    return ret;
+  }
+
+  NeQuickG_context_t* pContext = (NeQuickG_context_t*)(handle);
+  ret = prepare_ray(pContext);
+  if (ret != NEQUICK_OK) {
+    return ret;
+  }
+
+  double_t path_length_km;
+  if (pContext->ray.is_vertical) {
+    path_length_km = fabs(
+      pContext->ray.satellite_position.height -
+      pContext->ray.receiver_position.height);
+  } else {
+    path_length_km = fabs(
+      pContext->ray.slant.satellite_s_km -
+      pContext->ray.slant.receiver_s_km);
+  }
+
+  if (distance_from_start_km < 0.0 || distance_from_start_km > path_length_km) {
+    NEQUICK_ERROR_RETURN(
+      NEQUICK_ERROR_SRC_RAY,
+      NEQUICK_ERROR_CODE_BAD_RAY,
+      "ray sample distance (km) = %lf outside [0, %lf]",
+      distance_from_start_km,
+      path_length_km);
+  }
+
+  if (pContext->ray.is_vertical) {
+    const double_t start_height_km = pContext->ray.receiver_position.height;
+    const double_t end_height_km = pContext->ray.satellite_position.height;
+    const double_t direction = end_height_km >= start_height_km ? 1.0 : -1.0;
+    const double_t height_km =
+      start_height_km + (direction * distance_from_start_km);
+
+    ret = ray_vertical_get_profile(pContext);
+    if (ret != NEQUICK_OK) {
+      return ret;
+    }
+
+    *pHeight_meters = height_km * 1000.0;
+    *pElectron_density = ray_vertical_get_electron_density(pContext, height_km);
+    return NEQUICK_OK;
+  }
+
+  {
+    const double_t start_s_km = pContext->ray.slant.receiver_s_km;
+    const double_t end_s_km = pContext->ray.slant.satellite_s_km;
+    const double_t direction = end_s_km >= start_s_km ? 1.0 : -1.0;
+    const double_t current_s_km =
+      start_s_km + (direction * distance_from_start_km);
+    const double_t radius_km = sqrt(
+      (current_s_km * current_s_km) +
+      (pContext->ray.slant.perigee_radius_km * pContext->ray.slant.perigee_radius_km));
+
+    ret = ray_slant_get_electron_density(
+      pContext,
+      current_s_km,
+      pElectron_density);
+    if (ret != NEQUICK_OK) {
+      return ret;
+    }
+
+    *pHeight_meters = get_height_from_radius(radius_km) * 1000.0;
+  }
+
+  return NEQUICK_OK;
 }
 
 /** {@ref NeQuickG_library.set_time} */
@@ -288,6 +408,8 @@ const struct NeQuickG_library NeQuickG = {
   .set_satellite_position = set_satellite_position,
   .get_modip = get_modip_interface,
   .get_total_electron_content = get_total_electron_content,
+  .get_ray_path_length = get_ray_path_length,
+  .get_ray_point_electron_density = get_ray_point_electron_density,
   .input_data_to_std_output = input_data_to_std_output_impl,
   .input_data_to_output = input_data_to_output_impl,
 #ifdef FTR_UNIT_TEST
