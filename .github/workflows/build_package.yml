@@ -33,9 +33,9 @@ jobs:
         python -m pip uninstall -y nequick || true
         python -m pip install --no-cache-dir --force-reinstall .[test]
 
-    - name: debug where _c_ext comes from
+    - name: verify loaded _c_ext
       run: |
-        python -c "import sys, glob, os; print('cwd:', os.getcwd()); print('sys.path:'); print('\n'.join(sys.path)); print('matches in repo:'); print('\n'.join(sorted(glob.glob('**/_c_ext*', recursive=True))[:200]))"
+        python -c "import nequick, nequick._c_ext; print('nequick:', nequick.__file__); print('_c_ext:', nequick._c_ext.__file__); print('has NeQuick:', hasattr(nequick._c_ext, 'NeQuick'))"
 
     - name: test
       run: |
