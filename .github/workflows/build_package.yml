@@ -9,6 +9,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
+
+    - name: force clean rebuild
+      run: |
+        rm -rf build dist *.egg-info **/*.egg-info
+        rm -rf .pytest_cache .mypy_cache
+        python -m pip install -U pip setuptools wheel
+        rm -rf ./*/__pycache__
+        # (optional) ensure no cached sdist/wheel is reused
+        # python -m pip cache purge
+
     - name: make
       run: |
         cmake .
