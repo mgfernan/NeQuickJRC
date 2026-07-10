@@ -25,9 +25,9 @@ jobs:
         make
         pip install .[test]
 
-    - name: debug extension import path
+    - name: debug where _c_ext comes from
       run: |
-        python -c "import nequick, nequick._c_ext; print('nequick:', nequick.__file__); print('_c_ext:', nequick._c_ext.__file__)"
+        python -c "import sys, glob, os; print('cwd:', os.getcwd()); print('sys.path:'); print('\n'.join(sys.path)); print('matches in repo:'); print('\n'.join(sorted(glob.glob('**/_c_ext*', recursive=True))[:200]))"
 
     - name: test
       run: |
