@@ -1,60 +1,12 @@
 from dataclasses import dataclass
 import datetime
-import importlib.machinery
-import importlib.util
-import pathlib
 import sys
 from typing import List
 
 import numpy as np
 
-try:
-    from ._c_ext import NeQuick
-except ImportError:
-    # In source trees, `nequick/_c_ext/` may be treated as a namespace package
-    # and shadow the compiled extension module with the same base name.
-    _pkg_dir = pathlib.Path(__file__).resolve().parent
-    _binary_candidates = sorted(_pkg_dir.glob("_c_ext*"))
+from ._c_ext import NeQuick
 
-    # In CI we may import this source package, while the compiled extension lives
-    # in an installed wheel location later on sys.path.
-    if not _binary_candidates:
-        _pkg_name = __name__.split(".")[0]
-        _mod_name = f"{_pkg_name}._c_ext"
-        _suffixes = importlib.machinery.EXTENSION_SUFFIXES
-
-        for _path_entry in sys.path:
-            if not _path_entry:
-                continue
-
-            _candidate_pkg_dir = pathlib.Path(_path_entry) / _pkg_name
-            for _suffix in _suffixes:
-                _candidate_bin = _candidate_pkg_dir / f"_c_ext{_suffix}"
-                if _candidate_bin.exists():
-                    _binary_candidates.append(_candidate_bin)
-                    break
-            if _binary_candidates:
-                break
-
-    if not _binary_candidates:
-        raise
-
-    _module_name = f"{__name__.split('.')[0]}._c_ext"
-    _existing_module = sys.modules.get(_module_name)
-    if _existing_module is not None and getattr(_existing_module, "__file__", None) is None:
-        # Remove namespace placeholder module so the extension can be loaded.
-        del sys.modules[_module_name]
-
-    _spec = importlib.util.spec_from_file_location(
-        _module_name, str(_binary_candidates[0])
-    )
-    if _spec is None or _spec.loader is None:
-        raise
-
-    _module = importlib.util.module_from_spec(_spec)
-    sys.modules[_module_name] = _module
-    _spec.loader.exec_module(_module)
-    NeQuick = _module.NeQuick
 from .gim import Gim, GimHandler, GimFileHandler
 
 __all__ = ["NeQuick"]

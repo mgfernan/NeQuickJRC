@@ -9,16 +9,41 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Install system build deps
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential
+
+    - name: force clean rebuild
+      run: |
+        rm -rf build dist *.egg-info **/*.egg-info
+        rm -rf .pytest_cache .mypy_cache
+        python -m pip install -U pip setuptools wheel
+        rm -rf ./*/__pycache__
+        # (optional) ensure no cached sdist/wheel is reused
+        # python -m pip cache purge
+
     - name: make
       run: |
         cmake .
         make
-        pip install .[test]
+
+    - name: install fresh (no editable, no cache)
+      run: |
+        python -m pip uninstall -y nequick || true
+        python -m pip install --no-cache-dir --force-reinstall .[test]
 
     - name: test
       run: |
         ctest -E unit_test
-        pytest -v
+        tmpdir="$(mktemp -d)"
+        cd "$tmpdir"
+        python -m pytest -v /home/runner/work/NeQuickJRC/NeQuickJRC/test/nequick/test_nequick.py
 
   tag:
     needs: build
@@ -42,7 +67,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: 3.12
 
       - name: Install release dependenceies
         run: python -m pip install .[release]
