@@ -25,6 +25,10 @@ jobs:
         make
         pip install .[test]
 
+    - name: debug extension import path
+      run: |
+        python -c "import nequick, nequick._c_ext; print('nequick:', nequick.__file__); print('_c_ext:', nequick._c_ext.__file__)"
+
     - name: test
       run: |
         ctest -E unit_test
