@@ -63,7 +63,7 @@ jobs:
             raise SystemExit("No _c_ext binary found")
 
         so = cands[0]
-        spec = importlib.util.spec_from_file_location("nequick._c_ext_inspect", so)
+        spec = importlib.util.spec_from_file_location("nequick._c_ext", so)
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
 
