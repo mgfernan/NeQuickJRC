@@ -1,63 +1,11 @@
 from dataclasses import dataclass
 import datetime
-import importlib
-import importlib.machinery
-import importlib.util
-import pathlib
 import sys
 from typing import List
 
 import numpy as np
 
-try:
-    from ._c_ext import NeQuick
-except ImportError:
-    _pkg_dir = pathlib.Path(__file__).resolve().parent
-    _pkg_name = __name__.split(".")[0]
-    _module_name = f"{_pkg_name}._c_ext"
-    _suffixes = importlib.machinery.EXTENSION_SUFFIXES
-
-    _binary_candidates = [
-        p for p in _pkg_dir.iterdir()
-        if p.is_file() and any(p.name == f"_c_ext{s}" for s in _suffixes)
-    ]
-
-    if not _binary_candidates:
-        for _path_entry in sys.path:
-            if not _path_entry:
-                continue
-            _candidate_pkg_dir = pathlib.Path(_path_entry) / _pkg_name
-            for _suffix in _suffixes:
-                _candidate_bin = _candidate_pkg_dir / f"_c_ext{_suffix}"
-                if _candidate_bin.exists():
-                    _binary_candidates.append(_candidate_bin)
-                    break
-            if _binary_candidates:
-                break
-
-    if not _binary_candidates:
-        raise
-
-    _binary_path = _binary_candidates[0]
-
-    _existing = sys.modules.get(_module_name)
-    if _existing is not None and getattr(_existing, "__file__", None) is None:
-        del sys.modules[_module_name]
-
-    _loader = importlib.machinery.ExtensionFileLoader(_module_name, str(_binary_path))
-    _spec = importlib.util.spec_from_file_location(
-        _module_name,
-        str(_binary_path),
-        loader=_loader,
-    )
-    if _spec is None:
-        raise ImportError(f"Could not create spec for {_module_name} from {_binary_path}")
-
-    _module = importlib.util.module_from_spec(_spec)
-    sys.modules[_module_name] = _module
-    _loader.exec_module(_module)
-    NeQuick = _module.NeQuick
-
+from ._c_ext import NeQuick
 
 from .gim import Gim, GimHandler, GimFileHandler
 
