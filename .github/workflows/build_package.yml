@@ -41,7 +41,9 @@ jobs:
     - name: test
       run: |
         ctest -E unit_test
-        pytest -v
+        tmpdir="$(mktemp -d)"
+        cd "$tmpdir"
+        python -m pytest -v /home/runner/work/NeQuickJRC/NeQuickJRC/test
 
   tag:
     needs: build
