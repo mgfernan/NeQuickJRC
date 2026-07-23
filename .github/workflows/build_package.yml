@@ -38,45 +38,6 @@ jobs:
         python -m pip uninstall -y nequick || true
         python -m pip install --no-cache-dir --force-reinstall .[test]
 
-    - name: inspect installed nequick._c_ext without importing nequick package
-      run: |
-        python - <<'PY'
-        import site, pathlib, importlib.util, sys
-
-        sp = site.getsitepackages()
-        if not sp:
-            sp = [site.getusersitepackages()]
-        base = pathlib.Path(sp[0])
-
-        pkg_dir = None
-        for p in base.rglob("nequick/__init__.py"):
-            pkg_dir = p.parent
-            break
-
-        if not pkg_dir:
-            raise SystemExit(f"Could not find installed nequick in {base}")
-
-        cands = list(pkg_dir.glob("_c_ext*.so")) + list(pkg_dir.glob("_c_ext*.pyd"))
-        print("pkg_dir:", pkg_dir)
-        print("candidates:", [p.name for p in cands])
-        if not cands:
-            raise SystemExit("No _c_ext binary found")
-
-        so = cands[0]
-        spec = importlib.util.spec_from_file_location("nequick._c_ext", so)
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
-
-        print("binary:", so)
-        print("has NeQuick:", hasattr(mod, "NeQuick"))
-        print("matching attrs:", [a for a in dir(mod) if ("Ne" in a and "Quick" in a) or a.lower().endswith("nequick") or "nequick" in a.lower()])
-        PY
-
-
-    - name: verify loaded _c_ext
-      run: |
-        python -c "import nequick, nequick._c_ext; print('nequick:', nequick.__file__); print('_c_ext:', nequick._c_ext.__file__); print('has NeQuick:', hasattr(nequick._c_ext, 'NeQuick'))"
-
     - name: test
       run: |
         ctest -E unit_test
