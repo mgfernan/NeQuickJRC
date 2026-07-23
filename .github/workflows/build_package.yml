@@ -43,7 +43,7 @@ jobs:
         ctest -E unit_test
         tmpdir="$(mktemp -d)"
         cd "$tmpdir"
-        python -m pytest -v /home/runner/work/NeQuickJRC/NeQuickJRC/test/nequick/test_nequick.py
+        python -m pytest -v /home/runner/work/NeQuickJRC/NeQuickJRC/test/
 
   tag:
     needs: build
